@@ -7,11 +7,12 @@ export async function Header({ profile }: { profile: Profile | null }) {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-bg)]/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2 font-extrabold text-[var(--color-text-dark)]">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[var(--color-primary)] text-lg shadow-sm">
-            완
-          </span>
-          <span className="hidden sm:inline">완숙</span>
+        <Link
+          href="/"
+          className="text-xl font-extrabold lowercase tracking-tight text-[var(--color-logo)] sm:text-2xl"
+          style={{ fontFamily: "var(--font-nunito), ui-rounded, system-ui" }}
+        >
+          wansook
         </Link>
         {profile ? (
           <div className="flex flex-1 flex-wrap items-center justify-end gap-3">

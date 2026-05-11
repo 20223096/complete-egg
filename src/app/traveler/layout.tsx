@@ -9,5 +9,5 @@ export default async function TravelerLayout({ children }: { children: React.Rea
   if (!profile) redirect("/login?next=/traveler");
   if (profile.role !== "traveler") redirect(dashboardPathForRole(profile.role));
 
-  return <div className="mx-auto max-w-6xl px-4 py-8">{children}</div>;
+  return <div className="mx-auto max-w-md px-4 py-8">{children}</div>;
 }

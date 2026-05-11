@@ -1,23 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Select } from "@/components/Select";
-import { StepForm } from "@/components/StepForm";
 import { Textarea } from "@/components/Textarea";
+import { PageBrandBar } from "@/components/PageBrandBar";
 import { ACCOMMODATION_TYPE_LABELS, MOOD_KEYS, MOOD_LABELS, REQUIRED_OPTION_KEYS, REQUIRED_OPTION_LABELS } from "@/lib/constants/labels";
+import { REGION_GROUPS, REGION_SUGGESTIONS } from "@/lib/constants/regions";
 import { createTravelerRequest } from "@/lib/actions/traveler-requests";
 
-const steps = ["지역·날짜", "인원·예산", "숙소·옵션", "추가 요청", "제출 완료"];
+type SectionId = "region" | "schedule" | "people" | "type" | "extra";
 
 export default function RequestWizard() {
   const router = useRouter();
-  const [step, setStep] = useState(0);
+  const [open, setOpen] = useState<Record<SectionId, boolean>>({
+    region: true,
+    schedule: false,
+    people: false,
+    type: false,
+    extra: false,
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [province, setProvince] = useState(REGION_GROUPS[0]?.province ?? "강원");
+  const areas = useMemo(() => REGION_GROUPS.find((g) => g.province === province)?.areas ?? [], [province]);
   const [region, setRegion] = useState("");
   const [detailRegion, setDetailRegion] = useState("");
   const [checkIn, setCheckIn] = useState("");
@@ -36,12 +45,33 @@ export default function RequestWizard() {
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
   }
 
+  function toggleSection(id: SectionId) {
+    setOpen((o) => ({ ...o, [id]: !o[id] }));
+  }
+
+  const headline = useMemo(() => {
+    if (preferredMood.includes("family")) return "가족과 함께하는 여행";
+    if (preferredMood.includes("couple")) return "둘만의 여행";
+    if (region) return `${region} 여행`;
+    return "바다가 보이는 효도여행";
+  }, [preferredMood, region]);
+
   async function submit() {
+    if (!region.trim()) {
+      setError("지역에서 도시를 선택해 주세요.");
+      setOpen((o) => ({ ...o, region: true }));
+      return;
+    }
+    if (!checkIn || !checkOut) {
+      setError("체크인·체크아웃 일정을 입력해 주세요.");
+      setOpen((o) => ({ ...o, schedule: true }));
+      return;
+    }
     setError(null);
     setSubmitting(true);
     const res = await createTravelerRequest({
       traveler_name: travelerName || "여행객",
-      region,
+      region: region || province,
       detail_region: detailRegion,
       check_in_date: checkIn,
       check_out_date: checkOut,
@@ -62,131 +92,237 @@ export default function RequestWizard() {
     if (res.id) router.replace(`/traveler/requests/${res.id}`);
   }
 
-  return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold">요청서 작성</h1>
-        <p className="mt-1 text-sm text-slate-600">단계별로 입력하면 사장님들이 맞춤 견적을 보내 드려요.</p>
+  function Accordion({
+    id,
+    title,
+    summary,
+    children,
+  }: {
+    id: SectionId;
+    title: string;
+    summary?: string;
+    children: React.ReactNode;
+  }) {
+    const isOpen = open[id];
+    return (
+      <div className="overflow-hidden rounded-[var(--radius-ui)] border-[3px] border-[var(--color-primary)] bg-white shadow-sm">
+        <button
+          type="button"
+          onClick={() => toggleSection(id)}
+          className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left"
+        >
+          <div>
+            <p className="font-extrabold text-[var(--color-text-dark)]">{title}</p>
+            {!isOpen && summary ? <p className="mt-1 text-xs text-slate-500">{summary}</p> : null}
+          </div>
+          <span className="text-slate-400">{isOpen ? "⌄" : "›"}</span>
+        </button>
+        {isOpen ? <div className="border-t border-slate-100 px-4 pb-4 pt-2">{children}</div> : null}
       </div>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      <StepForm
-        steps={steps}
-        current={step}
-        onStepChange={setStep}
-        onBack={() => setStep((s) => Math.max(0, s - 1))}
-        onNext={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
-        isLast={step === steps.length - 1}
-        onSubmit={submit}
-        submitting={submitting}
-        submitLabel="요청서 보내기"
-        nextLabel="다음 단계"
-      >
-        {step === 0 ? (
-          <div className="space-y-4">
-            <Input label="지역" placeholder="예: 강릉" value={region} onChange={(e) => setRegion(e.target.value)} required />
-            <Input label="상세 지역" placeholder="예: 경포대 인근" value={detailRegion} onChange={(e) => setDetailRegion(e.target.value)} />
-            <Input label="체크인" type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} required />
-            <Input label="체크아웃" type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} required />
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-md px-4 pb-28 pt-4">
+      <PageBrandBar href="/traveler" />
+      <h1 className="text-xl font-extrabold text-[var(--color-text-dark)]">요청서 작성하기</h1>
+
+      <div className="mt-4 rounded-[var(--radius-ui)] bg-[var(--color-primary)] px-4 py-3 text-center shadow-sm">
+        <p className="text-base font-extrabold text-[var(--color-text-dark)]">{headline}</p>
+      </div>
+      <p className="mt-2 text-center text-sm font-medium text-slate-600">를 위한 요청서를 작성해보세요!</p>
+
+      {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
+
+      <div className="mt-6 space-y-3">
+        <Accordion
+          id="region"
+          title="지역"
+          summary={region || province ? `${region || province} ${detailRegion}` : undefined}
+        >
+          <p className="text-xs font-semibold text-slate-500">완숙의 추천</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {REGION_SUGGESTIONS.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => {
+                  setRegion(r);
+                  setDetailRegion("");
+                }}
+                className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+              >
+                {r}
+              </button>
+            ))}
           </div>
-        ) : null}
-        {step === 1 ? (
-          <div className="space-y-4">
-            <Input
-              label="인원"
-              type="number"
-              min={1}
-              value={peopleCount}
-              onChange={(e) => setPeopleCount(Number(e.target.value))}
-              required
-            />
-            <Input
-              label="객실 수"
-              type="number"
-              min={1}
-              value={roomCount}
-              onChange={(e) => setRoomCount(Number(e.target.value))}
-              required
-            />
-            <Input
-              label="최소 예산(원)"
-              type="number"
-              value={budgetMin}
-              onChange={(e) => setBudgetMin(Number(e.target.value))}
-            />
-            <Input
-              label="최대 예산(원)"
-              type="number"
-              value={budgetMax}
-              onChange={(e) => setBudgetMax(Number(e.target.value))}
-            />
-          </div>
-        ) : null}
-        {step === 2 ? (
-          <div className="space-y-4">
-            <Select label="숙소 타입" value={accommodationType} onChange={(e) => setAccommodationType(e.target.value)}>
-              {Object.entries(ACCOMMODATION_TYPE_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v}
-                </option>
+          <div className="mt-4 flex gap-2 rounded-2xl bg-slate-50 p-2">
+            <div className="w-2/5 space-y-1 overflow-y-auto text-sm">
+              {REGION_GROUPS.map((g) => (
+                <button
+                  key={g.province}
+                  type="button"
+                  onClick={() => {
+                    setProvince(g.province);
+                    setRegion("");
+                    setDetailRegion("");
+                  }}
+                  className={`block w-full rounded-xl px-2 py-2 text-left font-medium ${
+                    province === g.province ? "bg-white shadow-sm" : "text-slate-600 hover:bg-white/60"
+                  }`}
+                >
+                  {g.province}
+                </button>
               ))}
-            </Select>
-            <fieldset>
-              <legend className="text-sm font-medium text-[var(--color-brown)]">필요 옵션</legend>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {REQUIRED_OPTION_KEYS.map((k) => (
-                  <label key={k} className="flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs ring-1 ring-[var(--color-border)]">
-                    <input
-                      type="checkbox"
-                      checked={requiredOptions.includes(k)}
-                      onChange={() => toggle(requiredOptions, k, setRequiredOptions)}
-                    />
-                    {REQUIRED_OPTION_LABELS[k]}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <fieldset>
-              <legend className="text-sm font-medium text-[var(--color-brown)]">분위기</legend>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {MOOD_KEYS.map((k) => (
-                  <label key={k} className="flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs ring-1 ring-[var(--color-border)]">
-                    <input
-                      type="checkbox"
-                      checked={preferredMood.includes(k)}
-                      onChange={() => toggle(preferredMood, k, setPreferredMood)}
-                    />
-                    {MOOD_LABELS[k]}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            </div>
+            <div className="max-h-48 flex-1 space-y-1 overflow-y-auto border-l border-slate-200 pl-2 text-sm">
+              {areas.map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  onClick={() => {
+                    setRegion(a);
+                    setDetailRegion("");
+                  }}
+                  className={`block w-full rounded-xl px-2 py-1.5 text-left ${
+                    region === a ? "bg-[var(--color-primary-soft)] font-bold" : "text-slate-700 hover:bg-white/80"
+                  }`}
+                >
+                  · {a}
+                </button>
+              ))}
+            </div>
           </div>
-        ) : null}
-        {step === 3 ? (
-          <div className="space-y-4">
-            <Input label="표시 이름" placeholder="견적서에 보여질 이름" value={travelerName} onChange={(e) => setTravelerName(e.target.value)} />
-            <Textarea label="추가 요청사항" value={message} onChange={(e) => setMessage(e.target.value)} rows={5} />
-          </div>
-        ) : null}
-        {step === 4 ? (
-          <div className="space-y-3 text-sm text-slate-700">
-            <p>아래 내용으로 요청서를 전송합니다.</p>
-            <ul className="list-inside list-disc space-y-1 rounded-2xl bg-white/80 p-4 ring-1 ring-[var(--color-border)]">
-              <li>
-                {region} {detailRegion} / {checkIn} ~ {checkOut}
-              </li>
-              <li>
-                {peopleCount}명 · {roomCount}실 · 예산 {budgetMin.toLocaleString()}~{budgetMax.toLocaleString()}원
-              </li>
-              <li>{ACCOMMODATION_TYPE_LABELS[accommodationType as keyof typeof ACCOMMODATION_TYPE_LABELS] ?? accommodationType}</li>
-            </ul>
-            <p className="text-xs text-slate-500">전송 후에는 사장님들이 견적을 작성해 보내요.</p>
-          </div>
-        ) : null}
-      </StepForm>
-      <Button type="button" variant="ghost" onClick={() => router.back()}>
-        대시보드로
-      </Button>
+          <Input
+            className="mt-3"
+            label="상세 지역 (선택)"
+            placeholder="예: 경포대 인근"
+            value={detailRegion}
+            onChange={(e) => setDetailRegion(e.target.value)}
+          />
+        </Accordion>
+
+        <Accordion
+          id="schedule"
+          title="일정"
+          summary={checkIn && checkOut ? `${checkIn} ~ ${checkOut}` : undefined}
+        >
+          <Input label="체크인" type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} required />
+          <Input className="mt-3" label="체크아웃" type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} required />
+        </Accordion>
+
+        <Accordion
+          id="people"
+          title="인원 · 예산"
+          summary={
+            peopleCount
+              ? `${peopleCount}명 · ${budgetMin.toLocaleString()}~${budgetMax.toLocaleString()}원`
+              : undefined
+          }
+        >
+          <Input label="인원" type="number" min={1} value={peopleCount} onChange={(e) => setPeopleCount(Number(e.target.value))} required />
+          <Input
+            className="mt-3"
+            label="객실 수"
+            type="number"
+            min={1}
+            value={roomCount}
+            onChange={(e) => setRoomCount(Number(e.target.value))}
+            required
+          />
+          <Input
+            className="mt-3"
+            label="최소 예산(원)"
+            type="number"
+            value={budgetMin}
+            onChange={(e) => setBudgetMin(Number(e.target.value))}
+          />
+          <Input
+            className="mt-3"
+            label="최대 예산(원)"
+            type="number"
+            value={budgetMax}
+            onChange={(e) => setBudgetMax(Number(e.target.value))}
+          />
+        </Accordion>
+
+        <Accordion id="type" title="숙소 유형">
+          <Select label="타입" value={accommodationType} onChange={(e) => setAccommodationType(e.target.value)}>
+            {Object.entries(ACCOMMODATION_TYPE_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </Select>
+          <fieldset className="mt-4">
+            <legend className="text-xs font-semibold text-slate-600">필요 옵션</legend>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {REQUIRED_OPTION_KEYS.map((k) => (
+                <label
+                  key={k}
+                  className={`flex cursor-pointer items-center gap-1 rounded-full border-2 px-3 py-1.5 text-xs font-semibold ${
+                    requiredOptions.includes(k)
+                      ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)]"
+                      : "border-slate-200 bg-white"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={requiredOptions.includes(k)}
+                    onChange={() => toggle(requiredOptions, k, setRequiredOptions)}
+                  />
+                  {REQUIRED_OPTION_LABELS[k]}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="mt-4">
+            <legend className="text-xs font-semibold text-slate-600">분위기</legend>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {MOOD_KEYS.map((k) => (
+                <label
+                  key={k}
+                  className={`flex cursor-pointer items-center gap-1 rounded-full border-2 px-3 py-1.5 text-xs font-semibold ${
+                    preferredMood.includes(k)
+                      ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)]"
+                      : "border-slate-200 bg-white"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={preferredMood.includes(k)}
+                    onChange={() => toggle(preferredMood, k, setPreferredMood)}
+                  />
+                  {MOOD_LABELS[k]}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </Accordion>
+
+        <Accordion id="extra" title="추가 요청 · 이름">
+          <Input label="표시 이름" placeholder="견적서에 보일 이름" value={travelerName} onChange={(e) => setTravelerName(e.target.value)} />
+          <Textarea className="mt-3" label="추가 요청사항" value={message} onChange={(e) => setMessage(e.target.value)} rows={4} />
+        </Accordion>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200 bg-white/95 p-4 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:px-0 sm:pt-4">
+        <div className="mx-auto max-w-md space-y-2">
+          <Button
+            type="button"
+            className="w-full rounded-2xl py-3.5 text-base font-extrabold shadow-md"
+            loading={submitting}
+            onClick={submit}
+          >
+            요청서 보내기
+          </Button>
+          <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => router.back()}>
+            대시보드로
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
