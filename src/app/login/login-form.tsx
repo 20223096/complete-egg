@@ -24,9 +24,17 @@ export default function LoginForm() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error: signError } = await supabase.auth.signInWithPassword({ email, password });
+      const { error: signError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
       if (signError) {
-        setError(signError.message);
+        const raw = signError.message ?? "";
+        const friendly =
+          raw === "Invalid login credentials"
+            ? "이메일·비밀번호가 맞지 않거나, 아직 이메일 인증을 하지 않은 계정일 수 있어요. 가입 직후라면 메일함(스팸함)의 인증 링크를 먼저 눌러 주세요."
+            : raw;
+        setError(friendly);
         setLoading(false);
         return;
       }

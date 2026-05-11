@@ -32,8 +32,9 @@ export default function SignupForm() {
     setLoading(true);
     try {
       const supabase = createClient();
+      const emailTrim = email.trim();
       const { data, error: signError } = await supabase.auth.signUp({
-        email,
+        email: emailTrim,
         password,
         options: {
           data: {
@@ -55,7 +56,7 @@ export default function SignupForm() {
           role,
           name: name.trim() || "사용자",
           phone: phone.trim() || null,
-          email: email.trim(),
+          email: emailTrim,
         });
         if (pe) {
           setError(pe.message);
@@ -67,10 +68,19 @@ export default function SignupForm() {
             { onConflict: "host_id" }
           );
         }
+        router.replace(dashboardPathForRole(role));
+        router.refresh();
+        return;
       }
 
-      router.replace(dashboardPathForRole(role));
-      router.refresh();
+      if (uid && !data.session) {
+        setError(
+          "이메일 인증이 필요한 설정이에요. 메일함(스팸함)에서 인증 링크를 누른 뒤 로그인해 주세요. 로컬 개발만 할 때는 Supabase → Authentication → Providers → Email에서 Confirm email을 끄면 인증 없이 바로 쓸 수 있어요."
+        );
+        return;
+      }
+
+      setError("가입 처리 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "가입에 실패했습니다.");
     } finally {
@@ -96,7 +106,7 @@ export default function SignupForm() {
           <Input label="비밀번호" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <p className="text-xs text-slate-500">
-            이메일 인증을 켜 둔 경우, 인증 후 로그인하면 프로필이 없을 때 메타데이터로 자동 생성됩니다.
+            프로젝트에서 이메일 인증을 켜 두었다면, 가입 후 메일의 링크를 눌러야 로그인됩니다. 인증 메일이 없으면 Supabase 대시보드 설정을 확인해 주세요.
           </p>
           <Button type="submit" className="w-full" loading={loading}>
             가입하기
