@@ -30,7 +30,7 @@ export default async function HostMypage() {
         <p className="mt-2 text-sm">
           현재 플랜: <strong>{sub?.plan ?? "free"}</strong> ({sub?.status ?? "—"})
         </p>
-        <p className="mt-2 text-xs text-slate-600">MVP: 아래 버튼으로 Pro 체험을 전환해 자동 견적 규칙·미리보기를 테스트하세요.</p>
+        <p className="mt-2 text-xs text-slate-600">Pro로 전환하면 자동 견적 규칙과 미리보기를 쓸 수 있어요.</p>
         <form className="mt-3 flex flex-wrap gap-2" action={enableDemoProForHost}>
           <button type="submit" className="rounded-2xl bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold">
             Pro 체험 켜기

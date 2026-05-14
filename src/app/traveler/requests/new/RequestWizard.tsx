@@ -17,6 +17,7 @@ type SectionId = "region" | "schedule" | "people" | "type" | "extra";
 export default function RequestWizard() {
   const router = useRouter();
   const urlParams = useSearchParams();
+  const isTonightFlash = useMemo(() => urlParams.get("flash") === "1", [urlParams]);
   const [open, setOpen] = useState<Record<SectionId, boolean>>({
     region: false,
     schedule: false,
@@ -29,7 +30,6 @@ export default function RequestWizard() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
-  const [tonightFlash, setTonightFlash] = useState(false);
   const [naturalText, setNaturalText] = useState("");
   const [aiSummary, setAiSummary] = useState<string | null>(null);
 
@@ -50,29 +50,22 @@ export default function RequestWizard() {
   const [travelerName, setTravelerName] = useState("");
 
   useEffect(() => {
-    if (urlParams.get("flash") === "1") {
-      setTonightFlash(true);
-    }
-  }, [urlParams]);
-
-  useEffect(() => {
-    if (tonightFlash) {
-      const seoulToday = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-      const y = seoulToday.getFullYear();
-      const m = String(seoulToday.getMonth() + 1).padStart(2, "0");
-      const d = String(seoulToday.getDate()).padStart(2, "0");
-      const t = `${y}-${m}-${d}`;
-      const tmr = new Date(seoulToday);
-      tmr.setDate(tmr.getDate() + 1);
-      const y2 = tmr.getFullYear();
-      const m2 = String(tmr.getMonth() + 1).padStart(2, "0");
-      const d2 = String(tmr.getDate()).padStart(2, "0");
-      setCheckIn(t);
-      setCheckOut(`${y2}-${m2}-${d2}`);
-      setBudgetMin(50000);
-      setBudgetMax(160000);
-    }
-  }, [tonightFlash]);
+    if (!isTonightFlash) return;
+    const seoulToday = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+    const y = seoulToday.getFullYear();
+    const m = String(seoulToday.getMonth() + 1).padStart(2, "0");
+    const d = String(seoulToday.getDate()).padStart(2, "0");
+    const t = `${y}-${m}-${d}`;
+    const tmr = new Date(seoulToday);
+    tmr.setDate(tmr.getDate() + 1);
+    const y2 = tmr.getFullYear();
+    const m2 = String(tmr.getMonth() + 1).padStart(2, "0");
+    const d2 = String(tmr.getDate()).padStart(2, "0");
+    setCheckIn(t);
+    setCheckOut(`${y2}-${m2}-${d2}`);
+    setBudgetMin(50000);
+    setBudgetMax(160000);
+  }, [isTonightFlash]);
 
   function toggle(arr: string[], v: string, set: (x: string[]) => void) {
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -83,18 +76,18 @@ export default function RequestWizard() {
   }
 
   const headline = useMemo(() => {
-    if (tonightFlash) return "오늘 밤 빈 방";
+    if (isTonightFlash) return "오늘 밤 빈 방";
     if (preferredMood.includes("family")) return "가족과 함께하는 여행";
     if (preferredMood.includes("couple")) return "둘만의 여행";
     if (region) return `${region} 여행`;
     return "친구에게 말하듯, 한 번에";
-  }, [preferredMood, region, tonightFlash]);
+  }, [preferredMood, region, isTonightFlash]);
 
   async function runAiFill() {
     setError(null);
     setInfo(null);
     setParsing(true);
-    const res = await parseNaturalTravelRequest(naturalText || message, tonightFlash);
+    const res = await parseNaturalTravelRequest(naturalText || message, isTonightFlash);
     setParsing(false);
     if (!res.ok) {
       setError(res.error);
@@ -146,7 +139,7 @@ export default function RequestWizard() {
       preferred_mood: preferredMood,
       message,
       natural_language: naturalText.trim() || null,
-      is_tonight_flash: tonightFlash,
+      is_tonight_flash: isTonightFlash,
       ai_summary: aiSummary,
     });
     setSubmitting(false);
@@ -192,21 +185,16 @@ export default function RequestWizard() {
       <PageBrandBar href="/traveler" />
       <h1 className="text-xl font-extrabold text-[var(--color-text-dark)]">요청서 작성하기</h1>
       <p className="mt-1 text-sm text-slate-600">
-        편하게 말로 적으면 AI가 요청서 형식으로 정리해요. OTA에 없는 즉흥·빈 방 특가는{" "}
-        <strong className="font-semibold text-[var(--color-brown)]">오늘 밤 빈 방</strong>으로 켜 주세요.
+        편하게 말로 적으면 AI가 요청서 형식으로 정리해요. 당일 빈 방 특가는 홈이나 대시보드의{" "}
+        <strong className="font-semibold text-[var(--color-brown)]">오늘 밤 빈 방</strong>으로 들어와 주세요.
       </p>
 
       <div className="mt-4 rounded-[var(--radius-ui)] bg-[var(--color-primary)] px-4 py-3 text-center shadow-sm">
         <p className="text-base font-extrabold text-[var(--color-text-dark)]">{headline}</p>
       </div>
       <p className="mt-2 text-center text-sm font-medium text-slate-600">
-        {tonightFlash ? "빈 방은 손실이라 할인 의지가 가장 큰 요청이에요." : "AI가 정리한 뒤에도 아래에서 언제든 고칠 수 있어요."}
+        {isTonightFlash ? "빈 방은 손실이라 할인 의지가 가장 큰 요청이에요." : "AI가 정리한 뒤에도 아래에서 언제든 고칠 수 있어요."}
       </p>
-
-      <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-[var(--radius-ui)] border-2 border-red-200 bg-red-50/60 px-4 py-3">
-        <input type="checkbox" checked={tonightFlash} onChange={(e) => setTonightFlash(e.target.checked)} className="h-4 w-4" />
-        <span className="text-sm font-bold text-red-900">오늘 밤 빈 방 (당일 체크인 · 강한 할인 각도)</span>
-      </label>
 
       <div className="mt-4 rounded-[var(--radius-ui)] border-2 border-[var(--color-brown)]/30 bg-white p-4 shadow-sm">
         <p className="text-sm font-bold text-[var(--color-text-dark)]">친구에게 말하듯 적어 주세요</p>
@@ -220,10 +208,6 @@ export default function RequestWizard() {
         <Button type="button" className="mt-3 w-full" loading={parsing} onClick={runAiFill}>
           AI로 요청서 채우기
         </Button>
-        <p className="mt-2 text-xs text-slate-500">
-          OpenAI 키가 없으면 완숙 규칙 엔진으로 초안을 만듭니다. 키는 서버 환경 변수{" "}
-          <code className="rounded bg-slate-100 px-1">OPENAI_API_KEY</code> 에 넣을 수 있어요.
-        </p>
       </div>
 
       {aiSummary ? (

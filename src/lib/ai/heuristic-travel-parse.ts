@@ -99,12 +99,12 @@ export function heuristicParseTravel(text: string, opts: { tonightFlash: boolean
   }
 
   const message = raw
-    ? `[AI 초안] ${raw.slice(0, 400)}${raw.length > 400 ? "…" : ""}`
+    ? raw.slice(0, 400) + (raw.length > 400 ? "…" : "")
     : opts.tonightFlash
-      ? "[오늘 밤 빈 방] 급하게 숙소가 필요해요."
+      ? "오늘 밤 급하게 숙소가 필요해요."
       : "여행 일정을 완숙에 맡겨 주세요.";
 
-  const ai_summary = `지역 ${region} · ${people_count}명 · ${checkIn}~${checkOut} · 예산 약 ${budget_min.toLocaleString()}~${budget_max.toLocaleString()}원으로 정리했어요. 세부는 아래에서 손볼 수 있어요.`;
+  const ai_summary = `지역 ${region} · ${people_count}명 · ${checkIn}~${checkOut} · 예산 약 ${budget_min.toLocaleString()}~${budget_max.toLocaleString()}원으로 정리했어요. 아래에서 세부를 손보실 수 있어요.`;
 
   return {
     region,

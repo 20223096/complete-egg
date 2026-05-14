@@ -4,6 +4,7 @@ import { PageBrandBar } from "@/components/PageBrandBar";
 import { Button } from "@/components/Button";
 import { REQUEST_STATUS_LABELS } from "@/lib/constants/labels";
 import { cancelTravelerRequest } from "@/lib/actions/traveler-requests";
+import { requestNarrativeText } from "@/lib/traveler-request-narrative";
 import { createClient } from "@/lib/supabase/server";
 import { TravelerQuoteActions } from "./TravelerQuoteActions";
 
@@ -50,6 +51,7 @@ export default async function TravelerRequestDetailPage({
   }
 
   const regionLabel = [req.region, req.detail_region].filter(Boolean).join(" ");
+  const narrative = requestNarrativeText(req);
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
@@ -71,17 +73,7 @@ export default async function TravelerRequestDetailPage({
         <p className="mt-1 text-sm text-slate-600">
           예산 {req.budget_min?.toLocaleString()} ~ {req.budget_max?.toLocaleString()}원
         </p>
-        {req.ai_summary ? (
-          <p className="mt-2 rounded-xl bg-sky-50 px-3 py-2 text-sm text-sky-950">
-            <span className="font-semibold">AI 정리</span> · {req.ai_summary}
-          </p>
-        ) : null}
-        {req.natural_language ? (
-          <p className="mt-2 text-xs text-slate-500">
-            <span className="font-semibold text-slate-700">원문</span> · {req.natural_language}
-          </p>
-        ) : null}
-        {req.message ? <p className="mt-2 text-sm text-slate-600">{req.message}</p> : null}
+        {narrative ? <p className="mt-2 text-sm text-slate-700">{narrative}</p> : null}
       </div>
 
       {req.status === "open" || req.status === "quoted" ? (

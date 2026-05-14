@@ -46,7 +46,7 @@ export function HostQuoteForm({
   const [originalPrice, setOriginalPrice] = useState<number | "">("");
   const [included, setIncluded] = useState("조식, 주차");
   const [message, setMessage] = useState("감사합니다! 요청 주신 일정에 맞춰 안내드릴게요.");
-  const [cancellation, setCancellation] = useState("MVP 단계: 취소는 메시지로 협의해 주세요.");
+  const [cancellation, setCancellation] = useState("취소·환불은 메시지로 협의해 주세요.");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

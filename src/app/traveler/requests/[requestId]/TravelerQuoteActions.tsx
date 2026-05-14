@@ -76,9 +76,6 @@ export function TravelerQuoteActions({
                 <p className="mt-3 text-sm text-slate-600">
                   체크인 {checkIn} | 체크아웃 {checkOut}
                 </p>
-                <p className="mt-2 text-xs text-amber-800">
-                  🎁 EGG머니 결제 시 최대 {Math.floor(q.price * 0.022).toLocaleString()}P 적립 (예시)
-                </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
                   <span className="text-slate-500">
                     {q.original_price ? (
@@ -139,7 +136,7 @@ export function TravelerQuoteActions({
       })}
       <div className="rounded-[var(--radius-ui)] border border-[var(--color-primary-soft)] bg-[var(--color-primary-soft)]/50 px-4 py-5 text-center">
         <p className="font-bold text-[var(--color-text-dark)]">아직은 이게 다예요!</p>
-        <p className="mt-1 text-sm text-slate-600">알림 설정을 해두면 바로 알려드려요 (준비 중)</p>
+        <p className="mt-1 text-sm text-slate-600">새 견적이 오면 이 목록에 바로 표시돼요.</p>
       </div>
     </div>
   );

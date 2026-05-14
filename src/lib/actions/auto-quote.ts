@@ -73,7 +73,7 @@ export type PreviewDraftResult =
   | { ok: true; draft: Record<string, unknown> }
   | { ok: false; error: string };
 
-/** DB에 draft 상태가 없으므로 미리보기 JSON만 반환합니다. 실제 전송은 견적 작성 화면에서 진행하세요. */
+/** 자동 견적 초안 미리보기 (전송은 견적 작성 화면에서) */
 export async function previewAutoQuoteDraft(requestId: string, accommodationId: string): Promise<PreviewDraftResult> {
   const supabase = await createClient();
   const {
@@ -138,7 +138,7 @@ export async function previewAutoQuoteDraft(requestId: string, accommodationId: 
     discount_rate: discountRate,
     included_options: (rule?.available_options as string[])?.length ? rule.available_options : acc.options,
     message_from_host: `${rule?.base_message ?? ""}\n\n요청하신 ${req.region} 일정에 맞춰 준비했어요.`.trim(),
-    cancellation_policy: "MVP 단계: 세부 환불 규정은 메시지로 안내드릴게요.",
+    cancellation_policy: "세부 환불 규정은 메시지로 안내드릴게요.",
   };
 
   return { ok: true, draft };

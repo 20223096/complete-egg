@@ -27,7 +27,7 @@ export default async function RootLayout({
         <Header profile={profile} />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-[var(--color-border)] bg-white/60 py-6 text-center text-xs text-slate-600">
-          © {new Date().getFullYear()} 완숙 MVP · 따뜻한 숙소 매칭을 연결해 드려요
+          © {new Date().getFullYear()} 완숙 · 따뜻한 숙소 매칭을 연결해 드려요
         </footer>
       </body>
     </html>

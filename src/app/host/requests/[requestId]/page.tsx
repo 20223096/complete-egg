@@ -4,6 +4,7 @@ import { PageBrandBar } from "@/components/PageBrandBar";
 import { Badge } from "@/components/Badge";
 import { REQUEST_STATUS_LABELS } from "@/lib/constants/labels";
 import { createClient } from "@/lib/supabase/server";
+import { requestNarrativeText } from "@/lib/traveler-request-narrative";
 import { HostAutoQuotePanel } from "./HostAutoQuotePanel";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,7 @@ export default async function HostRequestDetailPage({ params }: { params: Promis
   ]);
 
   const hostLabel = firstAcc?.name ?? profile?.name ?? "사장님";
+  const narrative = requestNarrativeText(req);
 
   return (
     <div className="mx-auto max-w-md space-y-5 px-4 py-6">
@@ -58,21 +60,9 @@ export default async function HostRequestDetailPage({ params }: { params: Promis
             </dd>
           </div>
           <div>
-            <dt className="text-slate-500">요청 메시지</dt>
-            <dd className="mt-1 text-[var(--color-text-dark)]">{req.message || "—"}</dd>
+            <dt className="text-slate-500">요청 내용</dt>
+            <dd className="mt-1 whitespace-pre-wrap text-[var(--color-text-dark)]">{narrative || "—"}</dd>
           </div>
-          {req.ai_summary ? (
-            <div className="border-t border-slate-100 pt-2">
-              <dt className="text-slate-500">AI 요약</dt>
-              <dd className="mt-1 text-sm text-sky-900">{req.ai_summary}</dd>
-            </div>
-          ) : null}
-          {req.natural_language ? (
-            <div>
-              <dt className="text-slate-500">고객 원문</dt>
-              <dd className="mt-1 text-xs text-slate-600">{req.natural_language}</dd>
-            </div>
-          ) : null}
         </dl>
       </div>
 

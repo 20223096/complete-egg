@@ -116,7 +116,7 @@ export default function SignupForm() {
     <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-16">
       <div>
         <h1 className="text-2xl font-extrabold text-[var(--color-text-dark)]">회원가입</h1>
-        <p className="mt-1 text-sm text-slate-600">역할·이름·연락처를 입력하면 profiles 테이블에 저장됩니다.</p>
+        <p className="mt-1 text-sm text-slate-600">역할과 연락처를 입력하면 요청·견적에 사용할 계정이 만들어져요.</p>
       </div>
       <Card>
         <form className="space-y-4" onSubmit={onSubmit}>
@@ -135,10 +135,7 @@ export default function SignupForm() {
               인증 메일 다시 보내기
             </Button>
           ) : null}
-          <p className="text-xs text-slate-500">
-            Supabase 기본 메일은 스팸함에 가거나 지연될 수 있어요. 개발 중에는 Authentication → Providers → Email에서
-            <strong className="font-semibold"> Confirm email</strong>을 끄면 메일 없이 바로 로그인할 수 있어요.
-          </p>
+          <p className="text-xs text-slate-500">가입 확인 메일이 안 오면 스팸함을 확인해 주세요.</p>
           {!pendingVerify ? (
             <Button type="submit" className="w-full" loading={loading}>
               가입하기

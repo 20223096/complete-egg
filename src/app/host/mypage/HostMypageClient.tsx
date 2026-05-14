@@ -20,7 +20,7 @@ export function HostMypageClient({
   const [minPeople, setMinPeople] = useState<number | "">("");
   const [maxPeople, setMaxPeople] = useState<number | "">("");
   const [opts, setOpts] = useState("오션뷰,주차");
-  const [baseMessage, setBaseMessage] = useState("완숙 자동 초안입니다. 일정에 맞춰 최대한 맞춰 드릴게요.");
+  const [baseMessage, setBaseMessage] = useState("요청하신 일정에 맞춰 준비했어요. 편하게 문의 주세요.");
   const [discountPolicy, setDiscountPolicy] = useState("10% 할인 적용");
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -53,9 +53,7 @@ export function HostMypageClient({
   return (
     <Card>
       <h2 className="font-bold text-[var(--color-brown)]">자동 견적 설정 · {accommodationName}</h2>
-      <p className="mt-1 text-xs text-slate-600">
-        조건에 맞는 요청이 들어오면 자동 견적 생성 예정입니다. MVP에서는 미리보기와 초안 저장만 제공합니다.
-      </p>
+      <p className="mt-1 text-xs text-slate-600">맞는 요청이 들어오면 아래 규칙으로 자동 견적 초안을 만들 수 있어요.</p>
       <div className="mt-4 space-y-3">
         <Input label="매칭 지역(쉼표)" value={regions} onChange={(e) => setRegions(e.target.value)} />
         <div className="grid gap-3 sm:grid-cols-2">

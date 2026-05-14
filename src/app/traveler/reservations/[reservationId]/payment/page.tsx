@@ -28,7 +28,7 @@ export default async function PaymentPendingPage({
       <Card className="border-amber-200 bg-amber-50/90">
         <h1 className="text-xl font-extrabold text-[var(--color-text-dark)]">결제 준비중</h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-800">
-          현재 MVP 테스트 단계입니다. 예약 확정을 위해 운영자가 연락드릴 예정입니다. 실제 결제는 추후 연동됩니다.
+          예약 확정 안내를 위해 곧 연락드릴 수 있어요. 결제는 안내에 따라 진행해 주세요.
         </p>
         <p className="mt-4 text-sm font-semibold text-[var(--color-brown)]">
           {q?.accommodation_name} · {Number(res.price).toLocaleString()}원
