@@ -7,6 +7,7 @@ import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
 import { Select } from "@/components/Select";
+import { resendSignupConfirmation } from "@/lib/auth/resend-signup";
 import { dashboardPathForRole } from "@/lib/auth/paths";
 import { createClient } from "@/lib/supabase/client";
 
@@ -17,18 +18,40 @@ export default function SignupForm() {
     const r = searchParams.get("role");
     return r === "host" ? "host" : "traveler";
   }, [searchParams]);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState<"traveler" | "host">(initialRole);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [pendingVerify, setPendingVerify] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+
+  async function onResend() {
+    const emailTrim = email.trim();
+    if (!emailTrim) {
+      setError("이메일을 입력한 뒤 다시 보내기를 눌러 주세요.");
+      return;
+    }
+    setError(null);
+    setResendLoading(true);
+    try {
+      const supabase = createClient();
+      const { error: re } = await resendSignupConfirmation(supabase, emailTrim);
+      if (re) setError(re.message);
+      else setInfo("인증 메일을 다시 보냈어요. 스팸함도 확인해 주세요.");
+    } finally {
+      setResendLoading(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setInfo(null);
+    setPendingVerify(false);
     setLoading(true);
     try {
       const supabase = createClient();
@@ -74,8 +97,9 @@ export default function SignupForm() {
       }
 
       if (uid && !data.session) {
-        setError(
-          "이메일 인증이 필요한 설정이에요. 메일함(스팸함)에서 인증 링크를 누른 뒤 로그인해 주세요. 로컬 개발만 할 때는 Supabase → Authentication → Providers → Email에서 Confirm email을 끄면 인증 없이 바로 쓸 수 있어요."
+        setPendingVerify(true);
+        setInfo(
+          "가입은 되었어요. 이제 메일의 인증 링크만 누르면 로그인할 수 있어요. 메일이 안 오면 아래를 확인하거나 「인증 메일 다시 보내기」를 눌러 주세요."
         );
         return;
       }
@@ -104,13 +128,30 @@ export default function SignupForm() {
           <Input label="휴대폰 (선택)" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <Input label="이메일" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           <Input label="비밀번호" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          {info ? <p className="rounded-2xl bg-sky-50 px-3 py-2 text-sm text-sky-900">{info}</p> : null}
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {pendingVerify ? (
+            <Button type="button" variant="secondary" className="w-full" loading={resendLoading} onClick={onResend}>
+              인증 메일 다시 보내기
+            </Button>
+          ) : null}
           <p className="text-xs text-slate-500">
-            프로젝트에서 이메일 인증을 켜 두었다면, 가입 후 메일의 링크를 눌러야 로그인됩니다. 인증 메일이 없으면 Supabase 대시보드 설정을 확인해 주세요.
+            Supabase 기본 메일은 스팸함에 가거나 지연될 수 있어요. 개발 중에는 Authentication → Providers → Email에서
+            <strong className="font-semibold"> Confirm email</strong>을 끄면 메일 없이 바로 로그인할 수 있어요.
           </p>
-          <Button type="submit" className="w-full" loading={loading}>
-            가입하기
-          </Button>
+          {!pendingVerify ? (
+            <Button type="submit" className="w-full" loading={loading}>
+              가입하기
+            </Button>
+          ) : (
+            <p className="text-center text-sm text-slate-600">
+              인증 후{" "}
+              <Link href="/login" className="font-semibold text-[var(--color-brown)] underline">
+                로그인
+              </Link>
+              으로 이동해 주세요.
+            </p>
+          )}
         </form>
       </Card>
       <p className="text-center text-sm text-slate-600">

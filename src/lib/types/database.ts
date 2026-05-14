@@ -46,6 +46,9 @@ export interface TravelerRequest {
   required_options: string[];
   preferred_mood: string[];
   message: string | null;
+  natural_language?: string | null;
+  is_tonight_flash?: boolean;
+  ai_summary?: string | null;
   status: RequestStatus;
   created_at: string;
   updated_at: string;

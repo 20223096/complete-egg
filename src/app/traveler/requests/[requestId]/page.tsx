@@ -61,6 +61,9 @@ export default async function TravelerRequestDetailPage({
       <p className="mt-1 text-sm text-slate-500">
         {req.check_in_date} ~ {req.check_out_date} · {req.people_count}명 · {REQUEST_STATUS_LABELS[req.status] ?? req.status}
       </p>
+      {req.is_tonight_flash ? (
+        <p className="mt-2 inline-block rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">오늘 밤 빈 방</p>
+      ) : null}
 
       <div className="mt-5 rounded-[var(--radius-ui)] border-2 border-[var(--color-border)] bg-white p-4 shadow-sm">
         <p className="text-xs font-semibold text-slate-500">요청 요약</p>
@@ -68,6 +71,16 @@ export default async function TravelerRequestDetailPage({
         <p className="mt-1 text-sm text-slate-600">
           예산 {req.budget_min?.toLocaleString()} ~ {req.budget_max?.toLocaleString()}원
         </p>
+        {req.ai_summary ? (
+          <p className="mt-2 rounded-xl bg-sky-50 px-3 py-2 text-sm text-sky-950">
+            <span className="font-semibold">AI 정리</span> · {req.ai_summary}
+          </p>
+        ) : null}
+        {req.natural_language ? (
+          <p className="mt-2 text-xs text-slate-500">
+            <span className="font-semibold text-slate-700">원문</span> · {req.natural_language}
+          </p>
+        ) : null}
         {req.message ? <p className="mt-2 text-sm text-slate-600">{req.message}</p> : null}
       </div>
 

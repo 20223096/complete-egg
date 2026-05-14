@@ -18,6 +18,9 @@ export type CreateRequestInput = {
   required_options: string[];
   preferred_mood: string[];
   message: string;
+  natural_language?: string | null;
+  is_tonight_flash?: boolean;
+  ai_summary?: string | null;
 };
 
 export async function createTravelerRequest(input: CreateRequestInput) {
@@ -51,6 +54,9 @@ export async function createTravelerRequest(input: CreateRequestInput) {
     required_options: input.required_options,
     preferred_mood: input.preferred_mood,
     message: input.message || null,
+    natural_language: input.natural_language?.trim() || null,
+    is_tonight_flash: input.is_tonight_flash ?? false,
+    ai_summary: input.ai_summary?.trim() || null,
     status: "open" as RequestStatus,
   };
 

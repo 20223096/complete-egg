@@ -10,7 +10,7 @@ import { REQUIRED_OPTION_LABELS } from "@/lib/constants/labels";
 import { mockCompetitorRows } from "@/lib/mock-competitor-prices";
 import { upsertQuote } from "@/lib/actions/quotes";
 
-type Acc = { id: string; name: string; options: string[] };
+type Acc = { id: string; name: string; options: string[]; base_price: number | null };
 
 export function HostQuoteForm({
   requestId,
@@ -27,6 +27,7 @@ export function HostQuoteForm({
     required_options: string[];
     region: string;
     detail_region: string | null;
+    is_tonight_flash?: boolean;
   };
   accommodations: Acc[];
   alreadyQuotedAccIds: string[];
@@ -68,6 +69,22 @@ export function HostQuoteForm({
     .filter(Boolean);
 
   const competitorRows = useMemo(() => mockCompetitorRows(request.region), [request.region]);
+
+  const otaInsight = useMemo(() => {
+    const medianOta =
+      competitorRows.length > 0
+        ? Math.round(competitorRows.reduce((s, r) => s + r.price, 0) / competitorRows.length / 1000) * 1000
+        : 150000;
+    const otaRef = selectedAcc?.base_price && selectedAcc.base_price > 0 ? selectedAcc.base_price : medianOta;
+    const discountTarget = request.is_tonight_flash ? 0.42 : 0.28;
+    const suggested = Math.round((otaRef * (1 - discountTarget)) / 1000) * 1000;
+    return { otaRef, suggested, discountPct: Math.round(discountTarget * 100) };
+  }, [competitorRows, selectedAcc?.base_price, request.is_tonight_flash]);
+
+  function applyOtaAiPrice() {
+    setOriginalPrice(otaInsight.otaRef);
+    setPrice(otaInsight.suggested);
+  }
 
   function loadLastMessage() {
     try {
@@ -135,6 +152,18 @@ export function HostQuoteForm({
           <p className="text-lg font-extrabold text-[var(--color-text-dark)]">{budgetLine}</p>
           <p className="text-sm text-slate-500">인원 {request.people_count}명</p>
         </div>
+        {request.is_tonight_flash ? (
+          <p className="mt-2 inline-block rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">오늘 밤 빈 방 요청</p>
+        ) : null}
+
+        <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
+          <strong className="font-bold">OTA 기준 할인 추천</strong>: 시세 참고 {otaInsight.otaRef.toLocaleString()}원 전후를 정가로 두고,{" "}
+          {request.is_tonight_flash ? "빈 방" : "직거래"} 각도로 약 <strong>{otaInsight.discountPct}%</strong> 할인 시 제안가{" "}
+          <strong>{otaInsight.suggested.toLocaleString()}원</strong> 근처가 경쟁력 있어요. 가격만 넣어도 됩니다.
+          <Button type="button" variant="secondary" className="mt-2 w-full text-xs" onClick={applyOtaAiPrice}>
+            추천 정가·제안가 적용하기
+          </Button>
+        </div>
 
         <div className="mt-4 flex gap-3 border-t border-slate-100 pt-4">
           <div className="min-w-0 flex-1 space-y-3">
@@ -162,7 +191,7 @@ export function HostQuoteForm({
           </div>
           <div className="w-px shrink-0 bg-slate-200" />
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-slate-600">다른 숙소 견적가 (참고)</p>
+            <p className="text-xs font-semibold text-slate-600">OTA·주변 시세 (참고)</p>
             <ul className="mt-2 space-y-1 text-xs text-slate-600">
               {competitorRows.map((row) => (
                 <li key={row.label} className="flex justify-between gap-2">

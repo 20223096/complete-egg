@@ -27,6 +27,9 @@ export function RequestCard({
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {request.is_tonight_flash ? (
+              <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">오늘 밤</span>
+            ) : null}
             <Badge>{REQUEST_STATUS_LABELS[request.status] ?? request.status}</Badge>
             {quoteCount !== undefined && quoteCount > 0 ? (
               <Badge tone="warning">견적 {quoteCount}건</Badge>

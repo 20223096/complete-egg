@@ -30,6 +30,9 @@ export function HostRequestMarketCard({
 
   return (
     <div className="overflow-hidden rounded-[var(--radius-ui)] border-[3px] border-[var(--color-primary)] bg-white p-4 shadow-sm">
+      {request.is_tonight_flash ? (
+        <p className="mb-3 inline-block rounded-full bg-red-500 px-3 py-1 text-xs font-extrabold text-white">오늘 밤 빈 방</p>
+      ) : null}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="text-lg font-extrabold text-[var(--color-text-dark)]">{formatBudget(request)}</p>
         <p className="text-sm text-slate-500">인원 {request.people_count}명</p>

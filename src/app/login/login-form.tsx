@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
+import { resendSignupConfirmation } from "@/lib/auth/resend-signup";
 import { dashboardPathForRole } from "@/lib/auth/paths";
 import { createClient } from "@/lib/supabase/client";
 
@@ -16,11 +17,33 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+
+  async function onResendSignup() {
+    const em = email.trim();
+    if (!em) {
+      setError("위에 가입한 이메일을 입력한 뒤 다시 보내기를 눌러 주세요.");
+      return;
+    }
+    setError(null);
+    setInfo(null);
+    setResendLoading(true);
+    try {
+      const supabase = createClient();
+      const { error: re } = await resendSignupConfirmation(supabase, em);
+      if (re) setError(re.message);
+      else setInfo("가입 확인 메일을 다시 보냈어요. 스팸·프로모션함도 확인해 주세요.");
+    } finally {
+      setResendLoading(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     setLoading(true);
     try {
       const supabase = createClient();
@@ -99,10 +122,23 @@ export default function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          {info ? <p className="rounded-2xl bg-sky-50 px-3 py-2 text-sm text-sky-900">{info}</p> : null}
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
           <Button type="submit" className="w-full" loading={loading}>
             로그인
           </Button>
+          <div className="border-t border-slate-100 pt-3">
+            <p className="text-xs text-slate-500">가입 직후인데 메일이 안 왔나요?</p>
+            <Button
+              type="button"
+              variant="ghost"
+              className="mt-1 w-full text-sm"
+              loading={resendLoading}
+              onClick={onResendSignup}
+            >
+              인증(가입 확인) 메일 다시 보내기
+            </Button>
+          </div>
         </form>
       </Card>
       <p className="text-center text-sm text-slate-600">

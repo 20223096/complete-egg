@@ -8,23 +8,29 @@ export default function HomePage() {
       <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <div>
           <p className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--color-brown)] ring-1 ring-[var(--color-border)]">
-            proposal-based · warm · simple
+            AI 양면 번역 · 직거래 복원 · OTA가 못 따라오는 구조
           </p>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight text-[var(--color-text-dark)] sm:text-5xl">
-            원하는 숙소 조건을 적으면
+            말로만 설명해도
             <br />
-            <span className="text-[var(--color-brown)]">사장님 견적</span>이 도착해요
+            <span className="text-[var(--color-brown)]">AI가 요청서</span>로 바꿔 드려요
           </h1>
           <p className="mt-5 max-w-xl text-lg text-slate-700">
-            완숙은 여행객의 요청서를 받은 숙소 사장님이 조건에 맞는 견적을 보내고, 여행객이 비교·수락할 수 있는 숙박 역제안 플랫폼입니다.
+            완숙은 구매자의 인지 부담(조건 정리·표현)과 사장님의 인지 부담(가격·설득 문구)을 AI가 흡수합니다. 야놀자·여기어때처럼
+            수수료에 묶인 익명 1회성이 아니라, <strong className="font-semibold">단골·1:1 메시지·묘사 프로필</strong>로 관계를 쌓는 쪽이 목표예요.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/signup?role=traveler">
-              <Button type="button">요청서 작성하기</Button>
+            <Link href="/traveler/requests/new?flash=1">
+              <Button type="button">오늘 밤 빈 방 요청하기</Button>
+            </Link>
+            <Link href="/traveler/requests/new">
+              <Button type="button" variant="secondary">
+                자연어로 요청서 만들기
+              </Button>
             </Link>
             <Link href="/signup?role=host">
-              <Button type="button" variant="secondary">
-                사장님으로 견적 보내기
+              <Button type="button" variant="outline">
+                사장님으로 입장
               </Button>
             </Link>
           </div>
@@ -33,16 +39,19 @@ export default function HomePage() {
           <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-[var(--color-primary)]/40 blur-2xl" />
           <ul className="relative space-y-4 text-sm font-medium text-[var(--color-text-dark)]">
             <li className="flex gap-3 rounded-2xl bg-white/80 p-4 ring-1 ring-[var(--color-border)]">
-              <span className="text-xl">1</span>
-              <span>지역·일정·예산을 단계별로 입력해 요청서를 완성해요.</span>
+              <span className="text-xl">①</span>
+              <span>
+                <strong>오늘 밤 빈 방</strong>으로 들어오면 OTA에 없는 즉흥 출발·할인 각도가 열립니다. 빈 방은 100% 손실이라 사장님 할인
+                의지가 가장 큽니다.
+              </span>
             </li>
             <li className="flex gap-3 rounded-2xl bg-white/80 p-4 ring-1 ring-[var(--color-border)]">
-              <span className="text-xl">2</span>
-              <span>맞는 숙소에서 견적이 도착하면 카드로 비교해요.</span>
+              <span className="text-xl">②</span>
+              <span>친구에게 말하듯 적으면 AI가 깔끔한 요청서로 변환해 조건에 맞는 사장님께 전달합니다.</span>
             </li>
             <li className="flex gap-3 rounded-2xl bg-white/80 p-4 ring-1 ring-[var(--color-border)]">
-              <span className="text-xl">3</span>
-              <span>마음에 드는 견적을 수락하고 예약·결제 준비로 이어져요.</span>
+              <span className="text-xl">③</span>
+              <span>사장님은 OTA 시세를 기준으로 한 할인 제안가를 자동 추천받고, 가격만 넣고 견적을 발송할 수 있어요.</span>
             </li>
           </ul>
         </Card>
@@ -50,9 +59,12 @@ export default function HomePage() {
 
       <section className="mt-16 grid gap-6 md:grid-cols-3">
         {[
-          { t: "따뜻한 크림 톤 UX", d: "부담 없는 카드형 인터페이스로 견적을 한눈에 비교합니다." },
-          { t: "역제안 구조", d: "여행객이 먼저 조건을 제시하고, 사장님이 맞춤 견적으로 응답합니다." },
-          { t: "수락 후 대화", d: "견적이 확정되면 전용 메시지로 일정을 맞춰 나갈 수 있어요." },
+          {
+            t: "OTA가 못 따라오는 이유",
+            d: "수수료를 낮추면 스스로 모델이 무너지고, 단골·직거래는 광고 기반 OTA와 구조적으로 충돌합니다.",
+          },
+          { t: "AI 양면 번역", d: "나를 표현하기 어려운 구매자, 남을 설득하기 어려운 사장님 — 그 간극을 AI가 매끄럽게 메웁니다." },
+          { t: "1:1 메시지", d: "견적이 이어지면 전용 대화로 일정을 맞추며, 장기적으로는 단골 명부·취향 프로필로 확장할 수 있어요." },
         ].map((x) => (
           <Card key={x.t}>
             <h3 className="text-lg font-bold text-[var(--color-brown)]">{x.t}</h3>

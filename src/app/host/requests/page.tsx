@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function HostRequestsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ region?: string; people?: string; budgetMin?: string }>;
+  searchParams: Promise<{ region?: string; people?: string; budgetMin?: string; flash?: string }>;
 }) {
   const sp = await searchParams;
   const supabase = await createClient();
@@ -25,6 +25,9 @@ export default async function HostRequestsPage({
   if (sp.people) {
     const n = Number(sp.people);
     if (!Number.isNaN(n) && n > 0) openQuery = openQuery.gte("people_count", n);
+  }
+  if (sp.flash === "1") {
+    openQuery = openQuery.eq("is_tonight_flash", true);
   }
   if (sp.budgetMin) {
     const n = Number(sp.budgetMin);

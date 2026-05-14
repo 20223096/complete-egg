@@ -42,6 +42,11 @@ export default async function HostDashboardPage() {
               요청 탐색
             </Button>
           </Link>
+          <Link href="/host/requests?flash=1">
+            <Button type="button" variant="outline">
+              오늘 밤 빈 방만
+            </Button>
+          </Link>
         </div>
       </div>
 

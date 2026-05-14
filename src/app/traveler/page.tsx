@@ -55,9 +55,16 @@ export default async function TravelerDashboardPage() {
           <h1 className="text-2xl font-extrabold text-[var(--color-text-dark)]">여행객 대시보드</h1>
           <p className="mt-1 text-sm text-slate-600">요청서와 도착한 견적을 한곳에서 관리해요.</p>
         </div>
-        <Link href="/traveler/requests/new">
-          <Button type="button">새 요청서 작성</Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/traveler/requests/new?flash=1">
+            <Button type="button">오늘 밤 빈 방</Button>
+          </Link>
+          <Link href="/traveler/requests/new">
+            <Button type="button" variant="secondary">
+              AI 요청서 (자연어)
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {newQuoteAlerts.length ? (

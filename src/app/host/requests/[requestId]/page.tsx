@@ -38,6 +38,9 @@ export default async function HostRequestDetailPage({ params }: { params: Promis
           {req.region} · {req.traveler_name}
         </h1>
         <Badge>{REQUEST_STATUS_LABELS[req.status] ?? req.status}</Badge>
+        {req.is_tonight_flash ? (
+          <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">오늘 밤 빈 방</span>
+        ) : null}
       </div>
 
       <div className="rounded-[var(--radius-ui)] border-[3px] border-[var(--color-primary)] bg-white p-4 shadow-sm">
@@ -58,6 +61,18 @@ export default async function HostRequestDetailPage({ params }: { params: Promis
             <dt className="text-slate-500">요청 메시지</dt>
             <dd className="mt-1 text-[var(--color-text-dark)]">{req.message || "—"}</dd>
           </div>
+          {req.ai_summary ? (
+            <div className="border-t border-slate-100 pt-2">
+              <dt className="text-slate-500">AI 요약</dt>
+              <dd className="mt-1 text-sm text-sky-900">{req.ai_summary}</dd>
+            </div>
+          ) : null}
+          {req.natural_language ? (
+            <div>
+              <dt className="text-slate-500">고객 원문</dt>
+              <dd className="mt-1 text-xs text-slate-600">{req.natural_language}</dd>
+            </div>
+          ) : null}
         </dl>
       </div>
 

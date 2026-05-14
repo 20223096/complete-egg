@@ -37,7 +37,7 @@ export default async function HostQuoteNewPage({
   if (reqErr || !req) notFound();
 
   const [{ data: accs }, { data: existingQuotes }, { data: profile }, { data: firstAcc }] = await Promise.all([
-    supabase.from("accommodations").select("id,name,options").eq("host_id", user.id).eq("status", "active"),
+    supabase.from("accommodations").select("id,name,options,base_price").eq("host_id", user.id).eq("status", "active"),
     supabase.from("quotes").select("accommodation_id").eq("request_id", requestId).eq("host_id", user.id).eq("status", "sent"),
     supabase.from("profiles").select("name").eq("id", user.id).single(),
     supabase.from("accommodations").select("name").eq("host_id", user.id).eq("status", "active").limit(1).maybeSingle(),
@@ -60,11 +60,13 @@ export default async function HostQuoteNewPage({
           required_options: (req.required_options as string[]) ?? [],
           region: req.region,
           detail_region: req.detail_region,
+          is_tonight_flash: Boolean(req.is_tonight_flash),
         }}
         accommodations={(accs ?? []).map((a) => ({
           id: a.id as string,
           name: a.name as string,
           options: (a.options as string[]) ?? [],
+          base_price: (a.base_price as number | null) ?? null,
         }))}
         alreadyQuotedAccIds={alreadyQuotedAccIds}
         initialAccommodationId={accommodationId}
